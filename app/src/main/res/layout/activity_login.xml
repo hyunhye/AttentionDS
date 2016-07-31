@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="#ffffff"
+    tools:context="com.neurosky.mindwavemobiledemo.LoginActivity"
+    >
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/login_identification_et"
+        android:backgroundTint="#FF5252"
+        android:layout_gravity="center"
+        android:hint="학번" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/login_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/button_white"
+            android:textColor="#FF5252"
+            android:layout_margin="10dp"
+            android:text="Log in"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/login_sign_up_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_margin="10dp"
+            android:textColor="#FF5252"
+            android:background="@drawable/button_white"
+            android:text="Sign up"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remember login"
+        android:id="@+id/login_checkBox"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true" />
+</LinearLayout>
