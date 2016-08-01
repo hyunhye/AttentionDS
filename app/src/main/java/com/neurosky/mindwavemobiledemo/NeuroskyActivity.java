@@ -76,16 +76,15 @@ public class NeuroskyActivity extends Activity {
 	// getdata2
 	String myJSON;
 	private static final String TAG_RESULTS = "result";
-	private static final String TAG_STD_PLACE_ID = "stdplaceid";
-	private static final String TAG_STUDENT_ID = "studentid";
+	private static final String TAG_PERSON_CONDITION_ID = "person_conditionid";
+	private static final String TAG_PERSON_ID = "personid";
 	private static final String TAG_START_TIME = "start_time";
-	private static final String TAG_PLACE_ID = "placeid";
+	private static final String TAG_CONDITION_ID = "conditionid";
 	JSONArray std_place = null;
 
-	int real_identification;
-	int real_studentid;
-	int real_placeid;
-	int real_stdplaceid;
+	int real_personid;
+	int real_conditionid;
+	int real_person_conditionid;
 	String strNow;
 
 	@Override
@@ -165,14 +164,9 @@ public class NeuroskyActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-				real_identification = pref.getInt("identification",0);
-				real_studentid = pref.getInt("studentid",0);
-
-				Intent intent = getIntent();
-				strNow = intent.getStringExtra("now");
-				real_placeid = Integer.parseInt(intent.getStringExtra("placeid"));
-
-				Log.d("hyunhye",strNow+":"+real_placeid);
+				real_personid = pref.getInt("personid",0);
+				strNow = pref.getString("now","");
+				real_conditionid = pref.getInt("conditionid",0);
 
 				getData("http://14.63.214.221/std_place_get.php");
 
@@ -407,7 +401,7 @@ public class NeuroskyActivity extends Activity {
 			SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 			String strNow = sdfNow.format(date);
 			if(!strPrevNow.equals(strNow)) {
-				insertToDatabase(Integer.toString(real_stdplaceid), strNow, meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma);
+				insertToDatabase(Integer.toString(real_person_conditionid), strNow, meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma);
 				strPrevNow = strNow;
 			}
 			super.handleMessage(msg);
@@ -658,26 +652,25 @@ public class NeuroskyActivity extends Activity {
 		task.execute(stdplaceid, time, meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma);
 	}
 
-	private void checkStdPlace(){
+	private void checkPersonCondition(){
 		try {
 			JSONObject jsonObj = new JSONObject(myJSON);
 			std_place = jsonObj.getJSONArray(TAG_RESULTS);
 
 			for (int i = 0; i < std_place.length(); i++) {
 				JSONObject c = std_place.getJSONObject(i);
-				int json_stdplaceid = c.getInt(TAG_STD_PLACE_ID);
-				int json_studentid = c.getInt(TAG_STUDENT_ID);
-				int json_placeid = c.getInt(TAG_PLACE_ID);
+				int json_person_condition_id = c.getInt(TAG_PERSON_CONDITION_ID);
+				int json_personid = c.getInt(TAG_PERSON_ID);
+				int json_conditionid = c.getInt(TAG_CONDITION_ID);
 				String json_strNow = c.getString(TAG_START_TIME);
 
-				Log.d("hyunhye",json_studentid +","+real_studentid +","+json_placeid  +","+ real_placeid  +","+ strNow +","+json_strNow);
-				if(json_studentid == real_studentid && json_placeid == real_placeid && strNow.equals(json_strNow)){
-					real_stdplaceid = json_stdplaceid;
+				if(json_personid == real_personid && json_conditionid == real_conditionid && strNow.equals(json_strNow)){
+					real_person_conditionid = json_person_condition_id;
+
 					SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
 					SharedPreferences.Editor editor = pref.edit();
-
-					Log.d("json_stdplaceid",real_stdplaceid+"");
-					editor.putInt("stdplaceid", real_stdplaceid);
+					editor.putInt("person_condition_id", real_person_conditionid);
+					editor.commit();
 				}
 			}
 		}catch (JSONException e) {
@@ -713,7 +706,7 @@ public class NeuroskyActivity extends Activity {
 			@Override
 			protected void onPostExecute(String result) {
 				myJSON = result;
-				checkStdPlace();
+				checkPersonCondition();
 			}
 		}
 		GetDataJSON g = new GetDataJSON();

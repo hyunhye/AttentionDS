@@ -30,6 +30,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,20 +58,24 @@ import java.util.Date;
  */
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
-	private Button btn_device, main_place_ok_btn, main_graph_btn;
-	private TextView main_identification_tv, main_place_tv;
-	private EditText main_location_et,main_position_et;
+	private Button btn_device, main_graph_btn;
+	//private Button main_place_ok_btn;
+	private TextView main_identification_tv, main_condition_tv;
+	private Spinner main_bpm_spinner, main_color_spinner;
 
 	int real_identification;
-	int real_studentid;
-	int real_placeid;
+	int real_personid;
+	int real_conditionid;
 	String strNow;
+	String name;
+
+	private String bpm, color;
 
 	// getdata
 	String myJSON;
 	private static final String TAG_RESULTS = "result";
-	private static final String TAG_LOCATION = "location";
-	private static final String TAG_POSITION = "position";
+	private static final String TAG_BPM = "bpm";
+	private static final String TAG_COLOR = "color";
 	private static final String TAG_PLACE_ID = "placeid";
 	JSONArray places = null;
 
@@ -107,34 +113,111 @@ public class MainActivity extends Activity {
 		initView();
 
 		SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-		real_identification = pref.getInt("identification",0);
-		real_studentid = pref.getInt("studentid",0);
-		main_identification_tv.setText(Integer.toString(real_identification));
+		name = pref.getString("name","NONE");
+		real_personid = pref.getInt("personid",0);
+		main_identification_tv.setText(name);
 
+
+		/*
 		main_place_ok_btn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				getData("http://14.63.214.221/place_get.php");
 			}
 		});
+		*/
+
+		ArrayAdapter adapter_bpm = ArrayAdapter.createFromResource(this, R.array.bpm, android.R.layout.simple_spinner_item);
+		adapter_bpm.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		main_bpm_spinner.setAdapter(adapter_bpm);
+
+		ArrayAdapter adapter_color = ArrayAdapter.createFromResource(this, R.array.color, android.R.layout.simple_spinner_item);
+		adapter_color.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		main_color_spinner.setAdapter(adapter_color);
+
+		main_bpm_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				switch(position) {
+					case 0:
+						bpm = "101";
+						main_condition_tv.setText(bpm + "  :  " + color);
+						break;
+					case 1:
+						bpm = "102";
+						main_condition_tv.setText(bpm + "  :  " + color);
+						break;
+					case 2:
+						bpm = "103";
+						main_condition_tv.setText(bpm + "  :  " + color);
+						break;
+					case 3:
+						bpm = "104";
+						main_condition_tv.setText(bpm + "  :  " + color);
+						break;
+				}
+				getData("http://14.63.214.221/condition_get.php");
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+
+			}
+		});
+
+		main_color_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				switch(position){
+					case 0:
+						color = "black";
+						main_condition_tv.setText(bpm +"  :  "+color);
+						break;
+					case 1:
+						color = "white";
+						main_condition_tv.setText(bpm +"  :  "+color);
+						break;
+					case 2:
+						color = "yellow";
+						main_condition_tv.setText(bpm +"  :  "+color);
+						break;
+					case 3:
+						color = "red";
+						main_condition_tv.setText(bpm +"  :  "+color);
+						break;
+
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+
+			}
+		});
+
 
 		btn_device.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
-				SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-				SharedPreferences.Editor editor = pref.edit();
 
 				long now = System.currentTimeMillis();
 				Date date = new Date(now);
 				SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				strNow = sdfNow.format(date);
+				bpm = main_bpm_spinner.getSelectedItem().toString();
+				color = main_color_spinner.getSelectedItem().toString();
+
+				SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+				SharedPreferences.Editor editor = pref.edit();
 				editor.putString("now",strNow);
-				insertToDatabase(Integer.toString(real_studentid),Integer.toString(real_placeid),strNow);
+				editor.putString("bpm",bpm);
+				editor.putString("color",color);
+				editor.commit();
+
+				insertToDatabase(Integer.toString(real_personid),Integer.toString(real_conditionid),strNow);
 
 				Intent intent = new Intent(MainActivity.this,NeuroskyActivity.class);
-				intent.putExtra("now",strNow);
-				intent.putExtra("placeid",Integer.toString(real_placeid));
 				startActivity(intent);
 			}
 		});
@@ -177,11 +260,11 @@ public class MainActivity extends Activity {
 	private void initView() {
 		btn_device = (Button) findViewById(R.id.btn_device);
 		main_identification_tv = (TextView) findViewById(R.id.main_identification_tv);
-		main_place_tv = (TextView) findViewById(R.id.main_place_tv);
-		main_location_et = (EditText) findViewById(R.id.main_location_et);
-		main_position_et = (EditText) findViewById(R.id.main_position_et);
-		main_place_ok_btn = (Button) findViewById(R.id.main_place_ok_btn);
+		main_bpm_spinner = (Spinner) findViewById(R.id.main_bpm_spinner);
+		main_color_spinner = (Spinner) findViewById(R.id.main_color_spinner);
+		//main_place_ok_btn = (Button) findViewById(R.id.main_place_ok_btn);
 		main_graph_btn = (Button) findViewById(R.id.main_graph_btn);
+		main_condition_tv = (TextView)findViewById(R.id.main_condition_tv);
 	}
 
 	@Override
@@ -201,8 +284,9 @@ public class MainActivity extends Activity {
 		super.onStop();
 	}
 
+
 	// 서버에 저장하는 함수
-	private void insertToDatabase(String studentid, String placeid, String time){
+	private void insertToDatabase(String personid, String conditionid, String time){
 		class InsertData extends AsyncTask<String,Void, String> {
 			@Override
 			protected void onPreExecute() {
@@ -215,15 +299,14 @@ public class MainActivity extends Activity {
 			@Override
 			protected String doInBackground(String... params) {
 				try{
-					String studentid = (String)params[0];
-					String placeid = (String)params[1];
+					String personid = (String)params[0];
+					String conditionid = (String)params[1];
 					String time = (String)params[2];
 
-					Log.d("hyunhye_studentid",studentid);
 
-					String link="http://14.63.214.221/std_place_insert.php";
-					String data  = URLEncoder.encode("studentid", "UTF-8") + "=" + URLEncoder.encode(studentid, "UTF-8");
-					data += "&" + URLEncoder.encode("placeid", "UTF-8") + "=" + URLEncoder.encode(placeid, "UTF-8");
+					String link="http://14.63.214.221/person_condition_insert.php";
+					String data  = URLEncoder.encode("personid", "UTF-8") + "=" + URLEncoder.encode(personid, "UTF-8");
+					data += "&" + URLEncoder.encode("conditionid", "UTF-8") + "=" + URLEncoder.encode(conditionid, "UTF-8");
 					data += "&" + URLEncoder.encode("time", "UTF-8") + "=" + URLEncoder.encode(time, "UTF-8");
 
 					URL url = new URL(link);
@@ -253,10 +336,10 @@ public class MainActivity extends Activity {
 			}
 		}
 		InsertData task = new InsertData();
-		task.execute(studentid, placeid, time);
+		task.execute(personid, conditionid, time);
 	}
 
-	private void checkPlace(){
+	private void checkCondition(){
 		try {
 			JSONObject jsonObj = new JSONObject(myJSON);
 			places = jsonObj.getJSONArray(TAG_RESULTS);
@@ -264,21 +347,16 @@ public class MainActivity extends Activity {
 			for (int i = 0; i < places.length(); i++) {
 				JSONObject c = places.getJSONObject(i);
 				int id = c.getInt(TAG_PLACE_ID);
-				String position = c.getString(TAG_POSITION);
-				String location = c.getString(TAG_LOCATION);
+				String s_bpm = c.getString(TAG_BPM);
+				String s_color = c.getString(TAG_COLOR);
 
-				if(position.equals(main_position_et.getText().toString()) && location.equals(main_location_et.getText().toString())){
-					real_placeid = id;
+				if(s_bpm.equals(bpm) && s_color.equals(color)){
+					real_conditionid = id;
 
-					Log.d("hyunhye_placeid",real_placeid+"");
 					SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
 					SharedPreferences.Editor editor = pref.edit();
-					editor.putString("location", location);
-					editor.putString("position", position);
-					editor.putInt("placeid", id);
-					main_place_tv.setText(position+":"+location);
-				} else {
-					main_place_tv.setText("NO PLACE");
+					editor.putInt("conditionid",real_conditionid);
+					editor.commit();
 				}
 			}
 		}catch (JSONException e) {
@@ -314,7 +392,7 @@ public class MainActivity extends Activity {
 			@Override
 			protected void onPostExecute(String result) {
 				myJSON = result;
-				checkPlace();
+				checkCondition();
 			}
 		}
 		GetDataJSON g = new GetDataJSON();
