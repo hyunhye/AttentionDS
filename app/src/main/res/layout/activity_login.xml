@@ -11,10 +11,28 @@
     <EditText
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:id="@+id/login_identification_et"
+        android:id="@+id/login_email_et"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="7dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
         android:backgroundTint="#FF5252"
         android:layout_gravity="center"
-        android:hint="학번" />
+        android:hint="이메일" />
+
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/login_password_et"
+        android:inputType="textPassword"
+        android:backgroundTint="#FF5252"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="7dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_gravity="center"
+        android:hint="비밀번호" />
 
     <LinearLayout
         android:orientation="horizontal"

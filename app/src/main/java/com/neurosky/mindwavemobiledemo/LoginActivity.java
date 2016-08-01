@@ -28,7 +28,7 @@ import java.net.URL;
 
 public class LoginActivity extends Activity {
 
-    EditText login_identification_et;
+    EditText login_email_et, login_password_et;
     CheckBox login_checkBox;
     Button login_btn,login_sign_up_btn;
     public Boolean loginChecked = false;
@@ -36,8 +36,9 @@ public class LoginActivity extends Activity {
     // getdata
     String myJSON;
     private static final String TAG_RESULTS = "result";
-    private static final String TAG_IDENTIFICATION = "identification";
-    private static final String TAG_ID = "studentid";
+    private static final String TAG_ID = "personid";
+    private static final String TAG_EMAIL = "email";
+    private static final String TAG_PASSWORD = "password";
     private static final String TAG_NAME = "name";
     JSONArray myprofile = null;
 
@@ -59,14 +60,14 @@ public class LoginActivity extends Activity {
 
         LoginActivity = LoginActivity.this;
 
-        login_identification_et = (EditText) findViewById(R.id.login_identification_et);
+        login_email_et = (EditText) findViewById(R.id.login_email_et);
+        login_password_et = (EditText) findViewById(R.id.login_password_et);
         login_checkBox = (CheckBox) findViewById(R.id.login_checkBox);
         login_btn = (Button) findViewById(R.id.login_btn);
         login_sign_up_btn = (Button) findViewById(R.id.login_sign_up_btn);
 
         SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
         try{
-            Log.d("here",pref.getBoolean("autoLogin",false)+"");
             if(pref.getBoolean("autoLogin",false)){
                 LoginActivity = LoginActivity.this;
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -78,7 +79,7 @@ public class LoginActivity extends Activity {
        login_btn.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View v) {
-               getData("http://14.63.214.221/student_get.php");
+               getData("http://14.63.214.221/person_get.php");
            }
        });
 
@@ -109,22 +110,23 @@ public class LoginActivity extends Activity {
             JSONObject jsonObj = new JSONObject(myJSON);
             myprofile = jsonObj.getJSONArray(TAG_RESULTS);
 
-            int i = 0;
+            int i;
             for (i = 0; i < myprofile.length(); i++) {
                 JSONObject c = myprofile.getJSONObject(i);
-                int studentid = c.getInt(TAG_ID);
-                int identification = c.getInt(TAG_IDENTIFICATION);
+                int personid = c.getInt(TAG_ID);
+                String email = c.getString(TAG_EMAIL);
+                String password = c.getString(TAG_PASSWORD);
                 String name = c.getString(TAG_NAME);
 
-                if(identification == Integer.parseInt(login_identification_et.getText().toString())){
-                    savePreferences(studentid, identification, name);
+                if(email.equals(login_email_et.getText().toString()) && password.equals(login_password_et.getText().toString())){
+                    savePreferences(personid, email,password, name);
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
 
                     break;
                 }
             }
-            if(i == myprofile.length()){
+            if(i >= myprofile.length()){
                 new AlertDialog.Builder(this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setMessage("로그인에 실패했습니다.")
@@ -171,11 +173,12 @@ public class LoginActivity extends Activity {
         g.execute(url);
     }
 
-    private void savePreferences(int id, int identification, String name){
+    private void savePreferences(int id, String email, String password, String name){
         SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putInt("studentid", id);
-        editor.putInt("identification", identification);
+        editor.putInt("personid",id);
+        editor.putString("email", email);
+        editor.putString("password", password);
         editor.putString("name", name);
         editor.putBoolean("autoLogin", loginChecked);
         editor.commit();
