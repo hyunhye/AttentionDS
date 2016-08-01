@@ -295,6 +295,12 @@
         android:background="@xml/sharp"
         android:orientation="vertical" >
 
+        <TextView
+            android:text=""
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/grs_textView" />
+
     </LinearLayout>
     
     <!--  drawing with achart
