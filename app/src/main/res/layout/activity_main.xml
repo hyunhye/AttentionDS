@@ -25,17 +25,18 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="160dp"
+        android:layout_height="130dp"
         android:layout_margin="15dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="145dp"
             android:background="#00000000">
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="170dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
                 android:background="#00000000"
                 android:gravity="bottom"
                 android:orientation="vertical">
@@ -47,15 +48,14 @@
                     android:layout_marginLeft="10dp"
                     android:text="New Text"
                     android:textColor="#FF5252"
-                    android:textSize="35sp" />
-
+                    android:textSize="65sp" />
                 <TextView
-                    android:id="@+id/main_place_tv"
+                    android:id="@+id/main_condition_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:layout_marginLeft="10dp"
-                    android:text="나의 자리"
+                    android:text="CONDITION"
                     android:textColor="#707070"
                     android:textSize="25sp" />
 
@@ -91,22 +91,23 @@
             android:layout_margin="10dp"
             android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/main_location_et"
+
+            <Spinner
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="#FF5252"
-                android:hint="자리" />
-
-            <EditText
-                android:id="@+id/main_position_et"
+                android:prompt="@string/bpm"
+                style="@style/SpinnerStyle"
+                android:id="@+id/main_bpm_spinner"
+                android:layout_weight="1" />
+            <Spinner
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="#FF5252"
-                android:hint="번호" />
+                android:prompt="@string/color"
+                style="@style/SpinnerStyle"
+                android:id="@+id/main_color_spinner"
+                android:layout_weight="1" />
 
+            <!--
             <Button
                 android:id="@+id/main_place_ok_btn"
                 android:layout_width="wrap_content"
@@ -114,6 +115,7 @@
                 android:background="@drawable/button_white"
                 android:text="OK"
                 android:textColor="#FF5252" />
+                -->
         </LinearLayout>
 
 

@@ -1,8 +1,55 @@
 package com.neurosky.mindwavemobiledemo;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.felhr.usbserial.UsbSerialDevice;
+import com.felhr.usbserial.UsbSerialInterface;
+import com.neurosky.connection.ConnectionStates;
+import com.neurosky.connection.DataType.MindDataType;
+import com.neurosky.connection.EEGPower;
+import com.neurosky.connection.TgStreamHandler;
+import com.neurosky.connection.TgStreamReader;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -10,47 +57,9 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-
-import com.neurosky.connection.ConnectionStates;
-import com.neurosky.connection.EEGPower;
-import com.neurosky.connection.TgStreamHandler;
-import com.neurosky.connection.TgStreamReader;
-import com.neurosky.connection.DataType.MindDataType;
-
-import android.app.Activity;
-import android.app.Dialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
-import android.view.LayoutInflater;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This activity demonstrates how to use the constructor:
@@ -72,21 +81,149 @@ public class NeuroskyActivity extends Activity {
 
 	private String meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma;
 	private String strPrevNow = "first";
+	private String strPrevNow2 = "first";
 
 	// getdata2
 	String myJSON;
 	private static final String TAG_RESULTS = "result";
-	private static final String TAG_STD_PLACE_ID = "stdplaceid";
-	private static final String TAG_STUDENT_ID = "studentid";
+	private static final String TAG_PERSON_CONDITION_ID = "person_conditionid";
+	private static final String TAG_PERSON_ID = "personid";
 	private static final String TAG_START_TIME = "start_time";
-	private static final String TAG_PLACE_ID = "placeid";
+	private static final String TAG_CONDITION_ID = "conditionid";
 	JSONArray std_place = null;
 
-	int real_identification;
-	int real_studentid;
-	int real_placeid;
-	int real_stdplaceid;
-	String strNow;
+	int real_personid;
+	int real_conditionid;
+	int real_person_conditionid;
+	String real_start_time;
+
+
+	// gsr
+	public final String ACTION_USB_PERMISSION = "com.neurosky.mindwavemobiledemo.USB_PERMISSION";
+	UsbManager usbManager;
+	UsbDevice device;
+	UsbSerialDevice serialPort;
+	UsbDeviceConnection connection;
+
+	// gsr_textview
+	private void tvAppend(TextView tv, CharSequence text) {
+		final TextView ftv = tv;
+		final CharSequence ftext = text;
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				ftv.append(ftext);
+			}
+		});
+	}
+
+
+
+	UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
+		@Override
+		public void onReceivedData(byte[] arg0) {
+			String data = null;
+			try {
+				data = new String(arg0, "UTF-8");
+
+				// 현재 시간 알아내기
+				long now = System.currentTimeMillis();
+				Date date = new Date(now);
+				SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				String s = sdfNow.format(date);
+
+				//GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
+				if(!strPrevNow2.equals(s)) {
+					GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
+					strPrevNow2 = s;
+				}
+
+				data.concat("/n");
+				//tvAppend(gsr_textView,Integer.toString(real_person_conditionid));data.concat("/n");
+				tvAppend(gsr_textView, data);
+				//tvAppend(gsr_textView, strNow);data.concat("/n");
+
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+	};
+
+	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
+				boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
+				if (granted) {
+					connection = usbManager.openDevice(device);
+					serialPort = UsbSerialDevice.createUsbSerialDevice(device, connection);
+					if (serialPort != null) {
+						if (serialPort.open()) { //Set Serial Connection Parameters.
+							setUiEnabled(true);
+							serialPort.setBaudRate(9600);
+							serialPort.setDataBits(UsbSerialInterface.DATA_BITS_8);
+							serialPort.setStopBits(UsbSerialInterface.STOP_BITS_1);
+							serialPort.setParity(UsbSerialInterface.PARITY_NONE);
+							serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
+							serialPort.read(mCallback);
+							tvAppend(gsr_textView,"Serial Connection Opened!\n");
+
+						} else {
+							Log.d("SERIAL", "PORT NOT OPEN");
+						}
+					} else {
+						Log.d("SERIAL", "PORT IS NULL");
+					}
+				} else {
+					Log.d("SERIAL", "PERM NOT GRANTED");
+				}
+			} else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
+				//onClickStart(btn_start); // 기계 끼우면 바로 시작
+			} else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) { // 기게빼면 바로 중지
+				onClickStop(btn_stop);
+
+			}
+		};
+	};
+
+	public void onClickStart(View view) {
+
+		HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
+		if (!usbDevices.isEmpty()) {
+			boolean keep = true;
+			for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
+				device = entry.getValue();
+				int deviceVID = device.getVendorId();
+				if (deviceVID == 0x2341)//Arduino Vendor ID
+				{
+					PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+					usbManager.requestPermission(device, pi);
+					keep = false;
+				} else {
+					connection = null;
+					device = null;
+				}
+
+				if (!keep)
+					break;
+			}
+		}
+	}
+
+	public void onClickStop(View view) {
+		setUiEnabled(false);
+		serialPort.close();
+		tvAppend(gsr_textView,"\nSerial Connection Closed! \n");
+
+	}
+
+	public void setUiEnabled(boolean bool) {
+		btn_start.setEnabled(!bool);
+		btn_stop.setEnabled(bool);
+		gsr_textView.setEnabled(bool);
+
+	}
+	// gsr method end
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +234,15 @@ public class NeuroskyActivity extends Activity {
 
 		initView();
 		setUpDrawWaveView();
+
+		// gsr_permission
+		usbManager = (UsbManager) getSystemService(this.USB_SERVICE);
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(ACTION_USB_PERMISSION);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+		registerReceiver(broadcastReceiver, filter);
+		// gsr end
 
 		try {
 			// TODO	
@@ -136,7 +282,9 @@ public class NeuroskyActivity extends Activity {
 	private Button btn_stop = null;
 	private Button btn_selectdevice = null;
 	private LinearLayout wave_layout;
-	
+
+	private TextView gsr_textView;
+
 	private int badPacketCount = 0;
 
 	private void initView() {
@@ -159,26 +307,49 @@ public class NeuroskyActivity extends Activity {
 		btn_start = (Button) findViewById(R.id.btn_start);
 		btn_stop = (Button) findViewById(R.id.btn_stop);
 		wave_layout = (LinearLayout) findViewById(R.id.wave_layout);
-		
+
+		gsr_textView = (TextView) findViewById(R.id.gsr_textView);
+
 		btn_start.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
+
+				// neuro start
 				SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-				real_identification = pref.getInt("identification",0);
-				real_studentid = pref.getInt("studentid",0);
+				real_personid = pref.getInt("personid",0);
+				real_start_time = pref.getString("now","");
+				real_conditionid = pref.getInt("conditionid",0);
 
-				Intent intent = getIntent();
-				strNow = intent.getStringExtra("now");
-				real_placeid = Integer.parseInt(intent.getStringExtra("placeid"));
-
-				Log.d("hyunhye",strNow+":"+real_placeid);
-
-				getData("http://14.63.214.221/std_place_get.php");
+				getData("http://14.63.214.221/person_condition_get.php");
 
 				badPacketCount = 0;
 				showToast("connecting ...",Toast.LENGTH_SHORT);
 				start();
+
+				// gsr start
+				HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
+
+				if (!usbDevices.isEmpty()) {
+					boolean keep = true;
+					for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
+						device = entry.getValue();
+						int deviceVID = device.getVendorId();
+						if (deviceVID == 0x2341)//Arduino Vendor ID
+						{
+							PendingIntent pi = PendingIntent.getBroadcast(getApplicationContext(), 0, new Intent(ACTION_USB_PERMISSION), 0);
+							usbManager.requestPermission(device, pi);
+							keep = false;
+						} else {
+							connection = null;
+							device = null;
+						}
+
+						if (!keep)
+							break;
+					}
+				}
+
 			}
 		});
 
@@ -190,6 +361,9 @@ public class NeuroskyActivity extends Activity {
 				if(tgStreamReader != null){
 					tgStreamReader.stop();
 				}
+				// gsr stop and clear
+				onClickStop(btn_stop);
+				gsr_textView.setText(" ");
 			}
 
 		});
@@ -407,7 +581,8 @@ public class NeuroskyActivity extends Activity {
 			SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 			String strNow = sdfNow.format(date);
 			if(!strPrevNow.equals(strNow)) {
-				insertToDatabase(Integer.toString(real_stdplaceid), strNow, meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma);
+				Log.d("hyunhye",Integer.toString(real_person_conditionid)+":"+strNow);
+				insertToDatabase(Integer.toString(real_person_conditionid), strNow, meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma);
 				strPrevNow = strNow;
 			}
 			super.handleMessage(msg);
@@ -506,8 +681,8 @@ public class NeuroskyActivity extends Activity {
 			//bindToDevice(remoteDevice); // create bond works unstable on Samsung S5
 			//showToast("pairing ...",Toast.LENGTH_SHORT);
 
-			tgStreamReader = createStreamReader(remoteDevice); 
-			tgStreamReader.connectAndStart();
+			tgStreamReader = createStreamReader(remoteDevice);
+			//tgStreamReader.connectAndStart();
 		
 		}
 	
@@ -658,26 +833,26 @@ public class NeuroskyActivity extends Activity {
 		task.execute(stdplaceid, time, meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma);
 	}
 
-	private void checkStdPlace(){
+	private void checkPersonCondition(){
 		try {
 			JSONObject jsonObj = new JSONObject(myJSON);
 			std_place = jsonObj.getJSONArray(TAG_RESULTS);
 
 			for (int i = 0; i < std_place.length(); i++) {
 				JSONObject c = std_place.getJSONObject(i);
-				int json_stdplaceid = c.getInt(TAG_STD_PLACE_ID);
-				int json_studentid = c.getInt(TAG_STUDENT_ID);
-				int json_placeid = c.getInt(TAG_PLACE_ID);
+				int json_person_condition_id = c.getInt(TAG_PERSON_CONDITION_ID);
+				int json_personid = c.getInt(TAG_PERSON_ID);
+				int json_conditionid = c.getInt(TAG_CONDITION_ID);
 				String json_strNow = c.getString(TAG_START_TIME);
 
-				Log.d("hyunhye",json_studentid +","+real_studentid +","+json_placeid  +","+ real_placeid  +","+ strNow +","+json_strNow);
-				if(json_studentid == real_studentid && json_placeid == real_placeid && strNow.equals(json_strNow)){
-					real_stdplaceid = json_stdplaceid;
+				Log.d("hyunhye",json_personid +","+ real_personid +","+ json_conditionid +","+ real_conditionid +","+ real_start_time +","+ json_strNow);
+				if(json_personid == real_personid && json_conditionid == real_conditionid && real_start_time.equals(json_strNow)){
+					real_person_conditionid = json_person_condition_id;
+
 					SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
 					SharedPreferences.Editor editor = pref.edit();
-
-					Log.d("json_stdplaceid",real_stdplaceid+"");
-					editor.putInt("stdplaceid", real_stdplaceid);
+					editor.putInt("person_condition_id", real_person_conditionid);
+					editor.commit();
 				}
 			}
 		}catch (JSONException e) {
@@ -713,10 +888,68 @@ public class NeuroskyActivity extends Activity {
 			@Override
 			protected void onPostExecute(String result) {
 				myJSON = result;
-				checkStdPlace();
+				checkPersonCondition();
 			}
 		}
 		GetDataJSON g = new GetDataJSON();
 		g.execute(url);
 	}
+
+
+	// 서버에 저장하는 함수_gsr
+	private void GSRinsertToDatabase(String person_conditionid, String time, String gsrdata){
+		class InsertData extends AsyncTask<String,Void, String> {
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+			}
+			@Override
+			protected void onPostExecute(String s) {
+				super.onPostExecute(s);
+			}
+			@Override
+			protected String doInBackground(String... params) {
+				try{
+					String person_conditionid = (String)params[0];
+					String time = (String)params[1];
+					String gsrdata = (String)params[2];
+
+
+					String link="http://14.63.214.221/gsr_insert.php";
+					String data  = URLEncoder.encode("person_conditionid", "UTF-8") + "=" + URLEncoder.encode(person_conditionid, "UTF-8");
+					data += "&" + URLEncoder.encode("time", "UTF-8") + "=" + URLEncoder.encode(time, "UTF-8");
+					data += "&" + URLEncoder.encode("gsrdata", "UTF-8") + "=" + URLEncoder.encode(gsrdata, "UTF-8");
+
+
+					Log.d("attention",attention);
+					URL url = new URL(link);
+					URLConnection conn = url.openConnection();
+					conn.setDoOutput(true);
+					OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+
+					wr.write(data);
+					wr.flush();
+
+					BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+					StringBuilder sb = new StringBuilder();
+					String line = null;
+
+					// Read Server Response
+					while((line = reader.readLine()) != null)
+					{
+						sb.append(line);
+						break;
+					}
+					return sb.toString();
+				}
+				catch(Exception e){
+					return new String("Exception: " + e.getMessage());
+				}
+			}
+		}
+		InsertData task = new InsertData();
+		task.execute(person_conditionid, time, gsrdata);
+	}
+
 }
