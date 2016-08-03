@@ -94,7 +94,7 @@ public class NeuroskyActivity extends Activity {
 	int real_personid;
 	int real_conditionid;
 	int real_person_conditionid;
-	String strNow;
+	String real_start_time;
 
 
 	// gsr
@@ -117,6 +117,7 @@ public class NeuroskyActivity extends Activity {
 	}
 
 
+
 	UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
 		@Override
 		public void onReceivedData(byte[] arg0) {
@@ -128,9 +129,9 @@ public class NeuroskyActivity extends Activity {
 				long now = System.currentTimeMillis();
 				Date date = new Date(now);
 				SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				String strNow = sdfNow.format(date);
+				String s = sdfNow.format(date);
 
-				GSRinsertToDatabase(Integer.toString(real_person_conditionid), strNow, data);
+				GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
 
 
 				data.concat("/n");
@@ -313,10 +314,10 @@ public class NeuroskyActivity extends Activity {
 				// neuro start
 				SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
 				real_personid = pref.getInt("personid",0);
-				strNow = pref.getString("now","");
+				real_start_time = pref.getString("now","");
 				real_conditionid = pref.getInt("conditionid",0);
 
-				getData("http://14.63.214.221/std_place_get.php");
+				getData("http://14.63.214.221/person_condition_get.php");
 
 				badPacketCount = 0;
 				showToast("connecting ...",Toast.LENGTH_SHORT);
@@ -576,6 +577,7 @@ public class NeuroskyActivity extends Activity {
 			SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 			String strNow = sdfNow.format(date);
 			if(!strPrevNow.equals(strNow)) {
+				Log.d("hyunhye",Integer.toString(real_person_conditionid)+":"+strNow);
 				insertToDatabase(Integer.toString(real_person_conditionid), strNow, meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma);
 				strPrevNow = strNow;
 			}
@@ -839,7 +841,8 @@ public class NeuroskyActivity extends Activity {
 				int json_conditionid = c.getInt(TAG_CONDITION_ID);
 				String json_strNow = c.getString(TAG_START_TIME);
 
-				if(json_personid == real_personid && json_conditionid == real_conditionid && strNow.equals(json_strNow)){
+				Log.d("hyunhye",json_personid +","+ real_personid +","+ json_conditionid +","+ real_conditionid +","+ real_start_time +","+ json_strNow);
+				if(json_personid == real_personid && json_conditionid == real_conditionid && real_start_time.equals(json_strNow)){
 					real_person_conditionid = json_person_condition_id;
 
 					SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
