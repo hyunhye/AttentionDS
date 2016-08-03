@@ -81,6 +81,7 @@ public class NeuroskyActivity extends Activity {
 
 	private String meditation, attention, delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, middleGamma;
 	private String strPrevNow = "first";
+	private String strPrevNow2 = "first";
 
 	// getdata2
 	String myJSON;
@@ -131,8 +132,11 @@ public class NeuroskyActivity extends Activity {
 				SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				String s = sdfNow.format(date);
 
-				GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
-
+				//GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
+				if(!strPrevNow2.equals(s)) {
+					GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
+					strPrevNow2 = s;
+				}
 
 				data.concat("/n");
 				//tvAppend(gsr_textView,Integer.toString(real_person_conditionid));data.concat("/n");
@@ -677,8 +681,8 @@ public class NeuroskyActivity extends Activity {
 			//bindToDevice(remoteDevice); // create bond works unstable on Samsung S5
 			//showToast("pairing ...",Toast.LENGTH_SHORT);
 
-			tgStreamReader = createStreamReader(remoteDevice); 
-			tgStreamReader.connectAndStart();
+			tgStreamReader = createStreamReader(remoteDevice);
+			//tgStreamReader.connectAndStart();
 		
 		}
 	
