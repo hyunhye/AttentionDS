@@ -10,9 +10,17 @@
         android:layout_height="wrap_content">
 
         <Spinner
-            android:id="@+id/placeSpinner"
+            android:id="@+id/colorSpinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:entries="@array/colorArray"
+            />
+
+        <Spinner
+            android:id="@+id/bpmSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/bpmArray"
             />
 
         <Spinner

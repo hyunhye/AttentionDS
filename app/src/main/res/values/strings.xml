@@ -25,4 +25,20 @@
     <string name="close_drawer">Close drawer</string>
     <string name="bpm">BPM</string>
     <string name="color">COLOR</string>
+
+    <string-array name="colorArray">
+        <item>white</item>
+        <item>black</item>
+        <item>blue</item>
+        <item>red</item>
+    </string-array>
+
+    <string-array name="bpmArray">
+        <item>90-110</item>
+        <item>110-130</item>
+        <item>130-150</item>
+        <item>150-170</item>
+    </string-array>
+
+
 </resources>
