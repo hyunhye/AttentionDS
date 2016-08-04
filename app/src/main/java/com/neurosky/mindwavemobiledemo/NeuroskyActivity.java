@@ -19,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -104,7 +105,7 @@ public class NeuroskyActivity extends Activity {
 	UsbDevice device;
 	UsbSerialDevice serialPort;
 	UsbDeviceConnection connection;
-	StringBuffer buffer = new StringBuffer();
+	StringBuffer buffer = new StringBuffer(20);
 
 
 
@@ -141,20 +142,29 @@ public class NeuroskyActivity extends Activity {
 					strPrevNow2 = s;
 				}
 
-				data.concat("/n");
+				//data.concat("/n");
 				//tvAppend(gsr_textView,Integer.toString(real_person_conditionid));data.concat("/n");
-				tvAppend(gsr_textView, data);
+				//tvAppend(gsr_textView, data);
 				//tvAppend(gsr_textView, strNow);data.concat("/n");
 
-				if(data != null) {
-					buffer.append(data);
-					if(buffer.toString().length() > 20){ // 버퍼의 사이즈가 20이면 한 줄("/566/232/26.00/40.00")
-						buffer=null; // 버퍼 초기화
+				//if(data != null) {
+					//buffer.append("/566/232/26.00/40.00");
+
+					if(buffer != null) {
+						if (buffer.toString().length() >= 20) { // 버퍼의 사이즈가 20이면 한 줄("/566/232/26.00/40.00")
+							buffer = null; // 버퍼 초기화
+						}else {
+							buffer.append(data);
+						}
+						tvAppend(gsr_textView, buffer.toString());
 					}
-				}
-				// tvAppend(gsr_textView, buffer.toString());
-
-
+					/*
+					else{
+						buffer.append(data);
+					}
+					*/
+				//}
+				//tvAppend(gsr_textView, buffer.toString());
 
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
@@ -322,6 +332,7 @@ public class NeuroskyActivity extends Activity {
 		wave_layout = (LinearLayout) findViewById(R.id.wave_layout);
 
 		gsr_textView = (TextView) findViewById(R.id.gsr_textView);
+		gsr_textView.setMovementMethod(new ScrollingMovementMethod());
 
 		btn_start.setOnClickListener(new OnClickListener() {
 
