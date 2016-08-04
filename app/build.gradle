@@ -28,4 +28,7 @@ dependencies {
     compile files('src/main/resources/libStreamSDK_v1.1.0.jar')
     compile files('src/main/resources/usbserial.jar')
     compile files('src/main/resources/usb-serial-for-android-v010.jar')
+    compile files('libs/usbserial.jar')
+    compile files('libs/usb-serial-for-android-v010.jar')
+    compile files('libs/libStreamSDK_v1.1.0.jar')
 }

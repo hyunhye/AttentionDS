@@ -106,6 +106,7 @@ public class NeuroskyActivity extends Activity {
 	UsbSerialDevice serialPort;
 	UsbDeviceConnection connection;
 	StringBuffer buffer = new StringBuffer(4);
+	String[] result ;
 
 
 
@@ -141,7 +142,7 @@ public class NeuroskyActivity extends Activity {
 		@Override
 		public void onReceivedData(byte[] arg0) {
 			String data = null;
-			//buffer = null;
+
 			try {
 				data = new String(arg0, "UTF-8");
 
@@ -151,31 +152,10 @@ public class NeuroskyActivity extends Activity {
 				SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				String s = sdfNow.format(date);
 
-				//GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
-
 				if(!strPrevNow2.equals(s)) {
-					GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
+					//GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
 					strPrevNow2 = s;
 				}
-				
-				/*
-				Log.d("hyunhye_data","ah");
-				String result = sendServer("",data);
-				Log.d("hyunhye_data","ah2");
-				*/
-				//data.concat("/n");
-				//tvAppend(gsr_textView,Integer.toString(real_person_conditionid));data.concat("/n");
-				//tvAppend(gsr_textView, data);
-				//tvAppend(gsr_textView, strNow);data.concat("/n");
-
-				//if(data != null) {
-					//buffer.append("/566/232/26.00/40.00");
-
-				//if (buffer.toString().length() >= 20) { // 버퍼의 사이즈가 20이면 한 줄("/566/232/26.00/40.00")
-				//	buffer = null; // 버퍼 초기화
-				//}else {
-
-
 
 				/*
 				buffer.append(data);
@@ -186,41 +166,36 @@ public class NeuroskyActivity extends Activity {
 				tvAppend(gsr_textView, "\n--buffer--\n");
 				if(temp >= 20){
 					buffer.setLength(0);
-				}
-
-			*/
-
-
+				}*/
 
 
 				// 현혜 코드
-				tvAppend(gsr_textView, buffer.toString()+"\n");
+				tvAppend(gsr_textView, buffer.toString()+"\n"); // 버퍼 값 확인
 				//tvAppend(gsr_textView, strNow);data.concat("/n");
-
 
 				if(data != null) {
 					buffer.append(data);
 					for(int k = 0 ; k < data.length(); k++) {
 						if (data.charAt(k) == '*') {
-							buffer.setLength(0);
+
+							String temp = buffer.toString();
+							result = temp.split("/");
+
+							//if(!strPrevNow2.equals(s)) {
+								tvAppend(gsr_textView,"배열 길이 : "+result.length+"\n"); // 6
+								tvAppend(gsr_textView,"배열 : "+result[result.length-1]+"\n"); // *
+								//tvAppend(gsr_textView,"결과 "+result[result.length-4]+result[result.length]+result[result.length-3]+result[result.length-1]+"\n");
+								GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, result[result.length-5]);
+								envinsertToDatabase(Integer.toString(real_person_conditionid),result[result.length-2],result[result.length-4],result[result.length-3]); // hum, ill, temp
+								strPrevNow2 = s;
+							//}
+
+							buffer.setLength(0); // 버퍼 초기화
+
 							tvAppend(gsr_textView, "delete\n");
 						}
 					}
 				}
-
-
-
-
-
-				//}
-				//tvAppend(gsr_textView, buffer.toString());
-					/*
-					else{
-						buffer.append(data);
-					}
-					*/
-				//}
-				//tvAppend(gsr_textView, buffer.toString());
 
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
@@ -1030,6 +1005,64 @@ public class NeuroskyActivity extends Activity {
 		}
 		InsertData task = new InsertData();
 		task.execute(person_conditionid, time, gsrdata);
+	}
+
+	// 서버에 저장하는 함수_온습도
+	private void envinsertToDatabase(String person_conditionid, String humidity, String illumination, String temperature){
+		class InsertData extends AsyncTask<String,Void, String> {
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+			}
+			@Override
+			protected void onPostExecute(String s) {
+				super.onPostExecute(s);
+			}
+			@Override
+			protected String doInBackground(String... params) {
+				try{
+					String person_conditionid = (String)params[0];
+					String humidity = (String)params[1];
+					String illumination = (String)params[2];
+					String temperature = (String)params[3];
+
+
+					String link="http://14.63.214.221/environment_insert.php";
+					String data  = URLEncoder.encode("person_conditionid", "UTF-8") + "=" + URLEncoder.encode(person_conditionid, "UTF-8");
+					data += "&" + URLEncoder.encode("humidity", "UTF-8") + "=" + URLEncoder.encode(humidity, "UTF-8");
+					data += "&" + URLEncoder.encode("illumination", "UTF-8") + "=" + URLEncoder.encode(illumination, "UTF-8");
+					data += "&" + URLEncoder.encode("temperature", "UTF-8") + "=" + URLEncoder.encode(temperature, "UTF-8");
+
+
+					Log.d("attention",attention);
+					URL url = new URL(link);
+					URLConnection conn = url.openConnection();
+					conn.setDoOutput(true);
+					OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+
+					wr.write(data);
+					wr.flush();
+
+					BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+					StringBuilder sb = new StringBuilder();
+					String line = null;
+
+					// Read Server Response
+					while((line = reader.readLine()) != null)
+					{
+						sb.append(line);
+						break;
+					}
+					return sb.toString();
+				}
+				catch(Exception e){
+					return new String("Exception: " + e.getMessage());
+				}
+			}
+		}
+		InsertData task = new InsertData();
+		task.execute(person_conditionid, humidity, illumination,temperature);
 	}
 
 }
