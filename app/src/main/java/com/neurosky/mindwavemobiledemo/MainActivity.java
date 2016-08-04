@@ -76,8 +76,8 @@ public class MainActivity extends Activity {
 	private static final String TAG_RESULTS = "result";
 	private static final String TAG_BPM = "bpm";
 	private static final String TAG_COLOR = "color";
-	private static final String TAG_PLACE_ID = "placeid";
-	JSONArray places = null;
+	private static final String TAG_CONDITION_ID = "conditionid";
+	JSONArray conditions = null;
 
 	private static final int UART_PROFILE_CONNECTED = 20;
 	private static final int UART_PROFILE_DISCONNECTED = 21;
@@ -140,19 +140,19 @@ public class MainActivity extends Activity {
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 				switch(position) {
 					case 0:
-						bpm = "101";
+						bpm = "90-110";
 						main_condition_tv.setText(bpm + "  :  " + color);
 						break;
 					case 1:
-						bpm = "102";
+						bpm = "110-130";
 						main_condition_tv.setText(bpm + "  :  " + color);
 						break;
 					case 2:
-						bpm = "103";
+						bpm = "130-150";
 						main_condition_tv.setText(bpm + "  :  " + color);
 						break;
 					case 3:
-						bpm = "104";
+						bpm = "150-170";
 						main_condition_tv.setText(bpm + "  :  " + color);
 						break;
 				}
@@ -170,15 +170,15 @@ public class MainActivity extends Activity {
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 				switch(position){
 					case 0:
-						color = "black";
-						main_condition_tv.setText(bpm +"  :  "+color);
-						break;
-					case 1:
 						color = "white";
 						main_condition_tv.setText(bpm +"  :  "+color);
 						break;
+					case 1:
+						color = "black";
+						main_condition_tv.setText(bpm +"  :  "+color);
+						break;
 					case 2:
-						color = "yellow";
+						color = "blue";
 						main_condition_tv.setText(bpm +"  :  "+color);
 						break;
 					case 3:
@@ -342,14 +342,15 @@ public class MainActivity extends Activity {
 	private void checkCondition(){
 		try {
 			JSONObject jsonObj = new JSONObject(myJSON);
-			places = jsonObj.getJSONArray(TAG_RESULTS);
+			conditions = jsonObj.getJSONArray(TAG_RESULTS);
 
-			for (int i = 0; i < places.length(); i++) {
-				JSONObject c = places.getJSONObject(i);
-				int id = c.getInt(TAG_PLACE_ID);
+			for (int i = 0; i < conditions.length(); i++) {
+				JSONObject c = conditions.getJSONObject(i);
+				int id = c.getInt(TAG_CONDITION_ID);
 				String s_bpm = c.getString(TAG_BPM);
 				String s_color = c.getString(TAG_COLOR);
 
+				Log.d("hyunhye_condition",s_bpm+" "+bpm+" "+s_color+" "+color);
 				if(s_bpm.equals(bpm) && s_color.equals(color)){
 					real_conditionid = id;
 

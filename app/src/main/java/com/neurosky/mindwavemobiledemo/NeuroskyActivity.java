@@ -117,6 +117,20 @@ public class NeuroskyActivity extends Activity {
 		});
 	}
 
+	// gsr_textview
+	private String sendServer(String tv, CharSequence text) {
+		final String ftv = tv;
+		final CharSequence ftext = text;
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				ftv.concat(ftext.toString());
+			}
+		});
+
+		return tv;
+	}
+
 
 
 	UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
@@ -137,6 +151,9 @@ public class NeuroskyActivity extends Activity {
 					GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
 					strPrevNow2 = s;
 				}
+				Log.d("hyunhye_data","ah");
+				String result = sendServer("",data);
+				Log.d("hyunhye_data","ah2");
 
 				data.concat("/n");
 				//tvAppend(gsr_textView,Integer.toString(real_person_conditionid));data.concat("/n");

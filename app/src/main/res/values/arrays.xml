@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="bpm">
-        <item>101</item>
-        <item>102</item>
-        <item>103</item>
-        <item>104</item>
+        <item>90-110</item>
+        <item>110-130</item>
+        <item>130-150</item>
+        <item>150-170</item>
     </string-array>
     <string-array name="color">
-        <item>black</item>
         <item>white</item>
-        <item>yellow</item>
+        <item>black</item>
+        <item>blue</item>
         <item>red</item>
 </string-array>
 </resources>
