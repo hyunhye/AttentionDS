@@ -10,12 +10,7 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-<<<<<<< HEAD:.idea/libraries/support_v4_22_2_0.xml
       <root url="jar://F:/Android/sdk/extras/android/m2repository/com/android/support/support-v4/22.2.0/support-v4-22.2.0-sources.jar!/" />
-=======
-      <root url="jar://D:/Android/sdk/extras/android/m2repository/com/android/support/support-v4/22.2.0/support-v4-22.2.0-sources.jar!/" />
-      <root url="jar://$USER_HOME$/AppData/Local/Android/sdk/extras/android/m2repository/com/android/support/support-v4/22.2.0/support-v4-22.2.0-sources.jar!/" />
->>>>>>> 39cef5e04fd5e1c9bdb9302a708d9f7f3e406123:.idea/libraries/support_v4_22_2_0.xml
     </SOURCES>
   </library>
 </component>
