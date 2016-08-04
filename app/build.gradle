@@ -26,6 +26,11 @@ dependencies {
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'com.jjoe64:graphview:4.1.0'
     compile files('src/main/resources/libStreamSDK_v1.1.0.jar')
+<<<<<<< HEAD
     compile files('libs/usbserial.jar')
     compile files('libs/usb-serial-for-android-v010.jar')
+=======
+    compile files('libs/usb-serial-for-android-v010.jar')
+    compile files('libs/usbserial.jar')
+>>>>>>> 39cef5e04fd5e1c9bdb9302a708d9f7f3e406123
 }
