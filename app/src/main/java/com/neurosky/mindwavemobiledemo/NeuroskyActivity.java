@@ -105,7 +105,7 @@ public class NeuroskyActivity extends Activity {
 	UsbDevice device;
 	UsbSerialDevice serialPort;
 	UsbDeviceConnection connection;
-	StringBuffer buffer = new StringBuffer(20);
+	StringBuffer buffer = new StringBuffer(4);
 
 
 
@@ -141,6 +141,7 @@ public class NeuroskyActivity extends Activity {
 		@Override
 		public void onReceivedData(byte[] arg0) {
 			String data = null;
+			//buffer = null;
 			try {
 				data = new String(arg0, "UTF-8");
 
@@ -151,14 +152,17 @@ public class NeuroskyActivity extends Activity {
 				String s = sdfNow.format(date);
 
 				//GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
+
 				if(!strPrevNow2.equals(s)) {
 					GSRinsertToDatabase(Integer.toString(real_person_conditionid), s, data);
 					strPrevNow2 = s;
 				}
+				
+				/*
 				Log.d("hyunhye_data","ah");
 				String result = sendServer("",data);
 				Log.d("hyunhye_data","ah2");
-
+				*/
 				//data.concat("/n");
 				//tvAppend(gsr_textView,Integer.toString(real_person_conditionid));data.concat("/n");
 				//tvAppend(gsr_textView, data);
@@ -167,14 +171,49 @@ public class NeuroskyActivity extends Activity {
 				//if(data != null) {
 					//buffer.append("/566/232/26.00/40.00");
 
-					if(buffer != null) {
-						if (buffer.toString().length() >= 20) { // 버퍼의 사이즈가 20이면 한 줄("/566/232/26.00/40.00")
-							buffer = null; // 버퍼 초기화
-						}else {
-							buffer.append(data);
+				//if (buffer.toString().length() >= 20) { // 버퍼의 사이즈가 20이면 한 줄("/566/232/26.00/40.00")
+				//	buffer = null; // 버퍼 초기화
+				//}else {
+
+
+
+				/*
+				buffer.append(data);
+				int temp = buffer.length();
+				//buffer.setLength(100);
+				tvAppend(gsr_textView, buffer.toString());
+				tvAppend(gsr_textView, "\n--temp:"+temp+"--\n");
+				tvAppend(gsr_textView, "\n--buffer--\n");
+				if(temp >= 20){
+					buffer.setLength(0);
+				}
+
+			*/
+
+
+
+
+				// 현혜 코드
+				tvAppend(gsr_textView, buffer.toString()+"\n");
+				//tvAppend(gsr_textView, strNow);data.concat("/n");
+
+
+				if(data != null) {
+					buffer.append(data);
+					for(int k = 0 ; k < data.length(); k++) {
+						if (data.charAt(k) == '*') {
+							buffer.setLength(0);
+							tvAppend(gsr_textView, "delete\n");
 						}
-						tvAppend(gsr_textView, buffer.toString());
 					}
+				}
+
+
+
+
+
+				//}
+				//tvAppend(gsr_textView, buffer.toString());
 					/*
 					else{
 						buffer.append(data);
